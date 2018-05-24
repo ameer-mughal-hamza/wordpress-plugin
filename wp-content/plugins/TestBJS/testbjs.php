@@ -18,21 +18,25 @@ class TestBJS
         add_action('init', array($this, 'custom_post_type'));
     }
 
-    function register()
+    public function register()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue'));
     }
 
-    function activate()
-    {
-        $this->custom_post_type();
-        flush_rewrite_rules();
-    }
-
-    function deactivate()
-    {
-        flush_rewrite_rules();
-    }
+    /**
+     * We don't need this methods in this class any more because we split them into different classes.
+     * This is more better way of writing code.
+     * function activate()
+     * {
+     * $this->custom_post_type();
+     * flush_rewrite_rules();
+     * }
+     *
+     * function deactivate()
+     * {
+     * flush_rewrite_rules();
+     * }
+     */
 
     function custom_post_type()
     {
@@ -40,6 +44,12 @@ class TestBJS
             'public' => true,
             'label' => 'Books'
         ]);
+    }
+
+    public function activate()
+    {
+        require_once plugin_dir_path(__FILE__) . 'inc/test-bjs-plugin-activate.php';
+        TestBJSPluginActivate::activate();
     }
 
     function enqueue()
@@ -59,5 +69,12 @@ if (class_exists('TestBJS')) {
 }
 
 //activation
+//This will call the activate method inside the main class and in that method we call the
+//static method of TestBJSPluginActivate method activate
+//These are three different ways of doing the same thing.
 register_activation_hook(__FILE__, array($ameerhamza, 'activate'));
-register_deactivation_hook(__FILE__, array($ameerhamza, 'deactivate'));
+
+
+//deactivation
+require_once plugin_dir_path(__FILE__) . 'inc/test-bjs-plugin-deactivate.php';
+register_deactivation_hook(__FILE__, array('TestBJSPluginDeactivate', 'deactivate'));
